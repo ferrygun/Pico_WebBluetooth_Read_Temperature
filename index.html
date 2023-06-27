@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Raspberry Pico Web Bluetooth Serial Monitor</title>
+  <meta charset="UTF-8">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,6 +36,23 @@
       border-radius: 4px;
       box-sizing: border-box;
     }
+
+    .log-entry {
+      font-size: 20px;
+    }
+
+    .temperature-box {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .temperature {
+      font-size: 24px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -43,7 +61,7 @@
     <button id="connectButton" class="button" onclick="connectToDevice()">Connect</button>
     <button id="disconnectButton" class="button" onclick="disconnectFromDevice()" disabled>Disconnect</button>
     <br><br>
-    <pre id="log"></pre>
+    <div id="temperatureContainer"></div>
   </div>
 
   <script>
@@ -53,12 +71,16 @@
     let readCharacteristic;
 
     function log(message) {
-      logElement.innerHTML += message + '\n';
+      const logEntry = document.createElement('div');
+      logEntry.classList.add('log-entry');
+      logEntry.innerText = message;
+
+      logElement.appendChild(logEntry);
     }
 
     async function connectToDevice() {
       try {
-        logElement = document.getElementById('log');
+        logElement = document.getElementById('temperatureContainer');
         log('Requesting Bluetooth Device...');
 
         if (device && device.gatt.connected) {
@@ -98,7 +120,6 @@
       }
     }
 
-
     function handleDisconnect() {
       log('Connection lost. Device disconnected.');
       document.getElementById('connectButton').disabled = false;
@@ -116,9 +137,19 @@
       const value = event.target.value;
       const temperatureData = new Int16Array(value.buffer);
       const temperature = temperatureData[0] / 100.0;
-      log('Received temperature: ' + temperature.toFixed(2) + ' °C');
-    }
 
+      const temperatureBox = document.createElement('div');
+      temperatureBox.classList.add('temperature-box');
+
+      const temperatureValue = document.createElement('span');
+      temperatureValue.classList.add('temperature');
+      temperatureValue.innerText = temperature.toFixed(2) + ' °C';
+
+      temperatureBox.appendChild(temperatureValue);
+
+      logElement.innerHTML = '';
+      logElement.appendChild(temperatureBox);
+    }
   </script>
 </body>
 </html>
